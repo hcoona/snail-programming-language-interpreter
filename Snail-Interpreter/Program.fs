@@ -18,13 +18,15 @@ print \"x is bigger or equal than y\"; // x is not smaller
 endif
 print newline;
 "
-    let ast = run Parser.program source
+    let ifelse = "if a then ; else endif"
+//    let ast = run Parser.program source
+    let ast = run Parser.if_stmt ifelse
     match ast with
     | Success (r, _, _) ->  printfn "The AST is shown below:"
                             printfn "%A" r
                             printfn ""
                             printfn "Begin to simulate:"
-                            Interpreter.evalProgram r
+//                            Interpreter.evalProgram r
                             printfn "Simulation end."
     | Failure (es, _, _) -> printfn "Parse failed, the error information is shown below:"
                             printfn "%s" es

@@ -63,8 +63,9 @@ let if_stmt =
     let if_else = if_then .>> skipStr_ws1 "else" .>>. (many stmt) .>>? skipStr_ws "endif" |>> fun ((e, s1), s2) -> AST.IfThenElse (e, s1, s2)
     if_then_endif <|> if_else |>> AST.IfStmt
 
+let nop = skipStr_ws ";"
 let comment = skipStr_ws "//" >>. skipRestOfLine true >>. ws
 
-stmtImp := many comment >>. (print <|> if_stmt <|> assign) .>> many comment
+stmtImp := many nop >>. many comment >>. (print <|> if_stmt <|> assign) .>> many comment
 
 let program = ws >>. many stmt .>> eof;
