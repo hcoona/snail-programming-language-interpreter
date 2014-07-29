@@ -1,4 +1,6 @@
 TOKENS: ID INT
+EMTPTY-TOKENS: ; = ( ) + * - NEG EOF
+KEYWORDS: print
 
 program -> stmt_list
 
@@ -17,7 +19,7 @@ simple_stmt ->
 assign_stmt -> ID '=' expr
 
 print_stmt ->
-  | PRINT expr
+  | 'print' expr
 
 expr ->
   | '(' expr ')'
