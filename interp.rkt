@@ -2,6 +2,8 @@
 (require racket/match)
 (require "parser.rkt")
 
+#|
+
 (define-syntax (get-ast stx)
   (let* ([postfix-name
           (lambda (name postfix)
@@ -36,6 +38,8 @@
 (get-ast "STRING" snail "print a;")
 (get-ast "STRING" snail "if 1 < 2 then if a < b then print a; endif else print b; endif")
 (get-ast "FILE" snail "sample-code.txt")
+
+|#
 
 (define env0 '())
 (define (ext-env k v env)
@@ -74,26 +78,46 @@
     [(symbol? exp) (lookup-env exp env)]
     [else
      (let-syntax ([delegate 
-              (lambda (stx)
-                (syntax-case stx ()
-                  [(_ eval op env)
-                   (with-syntax ([x (datum->syntax stx 'x)]
-                                 [y (datum->syntax stx 'y)])
-                     (syntax (`(op ,x ,y) (op (eval x env) (eval y env)))))]))])
-     (match exp
-       [`(NEG ,x) (- (eval. x env))]
-       [delegate eval. + env]
-       [delegate eval. - env]
-       [delegate eval. * env]
-       [delegate eval. / env]
-       [delegate eval. < env]
-       [delegate eval. <= env]
-       [delegate eval. > env]
-       [delegate eval. >= env]
-       [`(== ,x ,y) (= (eval. x env) (eval. y env))]
-       [`(!= ,x ,y) (not (= (eval. x env) (eval. y env)))]))]))
+                   (lambda (stx)
+                     (syntax-case stx ()
+                       [(_ eval op env)
+                        (with-syntax ([x (datum->syntax stx 'x)]
+                                      [y (datum->syntax stx 'y)])
+                          (syntax (`(op ,x ,y) (op (eval x env) (eval y env)))))]))])
+       (match exp
+         [`(NEG ,x) (- (eval. x env))]
+         [delegate eval. + env]
+         [delegate eval. - env]
+         [delegate eval. * env]
+         [delegate eval. / env]
+         [delegate eval. < env]
+         [delegate eval. <= env]
+         [delegate eval. > env]
+         [delegate eval. >= env]
+         [`(== ,x ,y) (= (eval. x env) (eval. y env))]
+         [`(!= ,x ,y) (not (= (eval. x env) (eval. y env)))]))]))
 
 (define (interp stat)
   (interp1 stat env0))
 
-(interp1 (get-ast "FILE" snail "sample-code.txt") env0)
+(define (interp-port port [close #f])
+  (begin
+    (interp (snail-parser (lambda () (snail-lexer port))))
+    (if close
+        (close-input-port port)
+        (void))))
+
+(define (interp-string str)
+  (let ([input (open-input-string str)])
+    (interp-port input)))
+
+(define (interp-file filename)
+  (let ([input (open-input-file filename #:mode 'text)])
+    (interp-port input)))
+
+(provide (rename-out [interp snail-interp]
+                     [interp-port snail-interp-port]
+                     [interp-string snail-interp-string]
+                     [interp-file snail-interp-file]))
+
+;(interp-file "sample-code.txt")
