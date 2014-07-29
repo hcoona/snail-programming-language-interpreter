@@ -34,6 +34,7 @@
                ast)))])))
 
 (get-ast "STRING" snail "print a;")
+(get-ast "STRING" snail "if 1 < 2 then if a < b then print a; endif else print b; endif")
 (get-ast "FILE" snail "sample-code.txt")
 
 (define env0 '())
@@ -52,9 +53,47 @@
     [`(BEGIN ,ss ...) (for/fold ([env env])
                         ([s ss])
                         (interp1 s env))]
-    [`(PRINT ,v) (begin (display v) env)]))
+    [`(ASSIGN ,n ,e) (ext-env n (eval. e env) env)]
+    [`(PRINT ,e) (begin
+                   (display (eval. e env))
+                   env)]
+    [`(PRINT-STRING ,s) (begin (display s) env)]
+    ['(NEWLINE) (begin (newline) env)]
+    [`(IF ,e ,then)
+     (if (eval. e env)
+         (interp1 then env)
+         env)]
+    [`(IF ,e ,then ,else)
+     (if (eval. e env)
+         (interp1 then env)
+         (interp1 else env))]))
+
+(define (eval. exp env)
+  (cond
+    [(number? exp) exp]
+    [(symbol? exp) (lookup-env exp env)]
+    [else
+     (let-syntax ([delegate 
+              (lambda (stx)
+                (syntax-case stx ()
+                  [(_ eval op env)
+                   (with-syntax ([x (datum->syntax stx 'x)]
+                                 [y (datum->syntax stx 'y)])
+                     (syntax (`(op ,x ,y) (op (eval x env) (eval y env)))))]))])
+     (match exp
+       [`(NEG ,x) (- (eval. x env))]
+       [delegate eval. + env]
+       [delegate eval. - env]
+       [delegate eval. * env]
+       [delegate eval. / env]
+       [delegate eval. < env]
+       [delegate eval. <= env]
+       [delegate eval. > env]
+       [delegate eval. >= env]
+       [`(== ,x ,y) (= (eval. x env) (eval. y env))]
+       [`(!= ,x ,y) (not (= (eval. x env) (eval. y env)))]))]))
 
 (define (interp stat)
   (interp1 stat env0))
 
-(interp1 (get-ast "STRING" snail "print a; print b;") env0)
+(interp1 (get-ast "FILE" snail "sample-code.txt") env0)
