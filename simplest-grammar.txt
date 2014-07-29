@@ -3,12 +3,12 @@ TOKENS: ID INT
 program -> stmt_list
 
 stmt_list ->
-  | stmt stmt_list
+  | stmt_list stmt
   | stmt
 
 stmt ->
-  |  simple_stmt ';'
-  |  EMPTY
+  | simple_stmt ';'
+  | EPSILON
 
 simple_stmt ->
   | assign_stmt
