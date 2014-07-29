@@ -1,0 +1,20 @@
+program -> stmt_list
+stmt_list -> stmt_list stmt | stmt
+stmt -> assign_stmt | print_stmt | if_stmt
+assign_stmt -> ID = expr ;
+print_stmt -> PRINT expr ;| PRINT STRING ;| PRINT NEWLINE ;
+if_stmt -> IF expr THEN stmt_list ENDIF | IF expr THEN stmt_list ELSE stmt_list ENDIF
+expr -> ( expr )
+	| expr + expr
+	| expr - expr
+	| expr * expr
+	| expr / expr
+	| expr < expr
+	| expr > expr
+	| expr <= expr
+	| expr >= expr
+	| expr == expr
+	| expr != expr
+	| - expr
+	| INT
+	| ID

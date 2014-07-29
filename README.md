@@ -1,6 +1,6 @@
 # An interpreter of Snail Programming Language
 
-This is an exercise for Theory of Compiler. I approached it in traditional ways as implement an Lexer and Parser, and then Interpreter. This is really a tough work. Then I tried [FParsec](http://www.quanttec.com/fparsec/), it's an amazing library, make the whole world better.
+This is an exercise for Theory of Compiler. I approached it in traditional ways as implement an Lexer and Parser, and then Interpreter. This is really a boring work to build the lexer and parser. I made them with the help of racket parser-tool library.
 
 ## Traditional approach
 
@@ -20,7 +20,7 @@ There are three steps to build a Lexer.
 2. Convert Regex expressions to NFA(Nondeterministic Finite Automation).
 3. Convert NFA to DFA(Deterministic Finite Automation).
 
-As well-formed structures are easier to parse, you should consider about how to represent tokens. In F#, it is nature to use [Discriminated Unions](http://msdn.microsoft.com/en-us/library/dd233226.aspx).
+As well-formed structures are easier to parse, you should consider about how to represent tokens. In racket, we can use symbol and pattern matching.
 
 ### Implementation of Parser
 
