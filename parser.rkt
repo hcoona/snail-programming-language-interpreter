@@ -24,7 +24,7 @@
    [(:or "print" "newline") (string->symbol (string-upcase lexeme))]
    [(:or "if" "then" "else" "endif") (string->symbol (string-upcase lexeme))]
    [(:+ numeric) (token-INT (string->number lexeme))]
-   [(:+ alphabetic) (token-ID lexeme)]
+   [(:+ alphabetic) (token-ID (string->symbol lexeme))]
    [#\" (token-STRING (list->string (string-lexer input-port)))]
    [(:: #\/ #\/ (:* (:- any-char #\newline)) #\newline) (return-without-pos (snail-lexer input-port))]
    [whitespace (return-without-pos (snail-lexer input-port))]
@@ -72,7 +72,7 @@
     (assign_stmt  [(ID = expr) `(ASSIGN ,$1 ,$3)])
     (print_stmt   [(PRINT expr) `(PRINT ,$2)]
                   [(PRINT NEWLINE) '(NEWLINE)]
-                  [(PRINT STRING) `(PRINT ,$2)])
+                  [(PRINT STRING) `(PRINT-STRING ,$2)])
     (compond_stmt [(IF expr THEN stmt_list ENDIF)
                    `(IF ,$2 ,(build-statment-list $4))]
                   [(IF expr THEN stmt_list ELSE stmt_list ENDIF)
