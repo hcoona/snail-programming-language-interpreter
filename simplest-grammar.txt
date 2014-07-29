@@ -1,0 +1,28 @@
+TOKENS: ID INT
+
+program -> stmt_list
+
+stmt_list ->
+  | stmt stmt_list
+  | stmt
+
+stmt ->
+  |  simple_stmt ';'
+  |  EMPTY
+
+simple_stmt ->
+  | assign_stmt
+  | print_stmt
+
+assign_stmt -> ID '=' expr
+
+print_stmt ->
+  | PRINT expr
+
+expr ->
+  | '(' expr ')'
+  | expr '+' expr
+  | expr '*' expr
+  | '-' expr
+  | INT
+  | ID
