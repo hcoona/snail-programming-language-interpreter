@@ -7,8 +7,8 @@
   (cons `(,k . ,v) env))
 (define (bulk-ext-env ks vs env)
   (for/fold ([env '()])
-    ([k '(a b c)]
-     [v '(1 2 3)])
+    ([k ks]
+     [v vs])
     (ext-env k v env)))
 (define (lookup-env k env)
   (cdr (assoc k env)))
