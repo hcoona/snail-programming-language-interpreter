@@ -103,4 +103,46 @@
          (newline)
          (run-lexer lexer port))])))
 
-(provide snail-lexer snail-parser)
+(define (get-tokens lexer port [close #t])
+  (let ([tokens
+           (let loop ([pt (lexer port)])
+             (let* ([t (position-token-token pt)]
+                    [tn (token-name t)])
+               (cond
+                 [(eq? tn 'EOF) '(EOF)]
+                 [else
+                  (cons t (loop (lexer port)))])))])
+      (begin
+        [if close (close-input-port port) (void)]
+        tokens)))
+
+(define (snail-lex-port port [close #t])
+  (get-tokens snail-lexer port close))
+
+(define (snail-lex-string str)
+  (snail-lex-port (open-input-string str)))
+
+(define (snail-lex-file filename)
+  (snail-lex-port (open-input-file filename #:mode 'text)))
+
+(define (get-ast parser lexer port [close #t])
+  (let ([ast (parser (lambda () (lexer port)))])
+    (begin
+      [if close (close-input-port port) (void)]
+      ast)))
+
+(define (snail-parse-port port [close #t])
+  (get-ast snail-parser snail-lexer port close))
+
+(define (snail-parse-string str)
+  (snail-parse-port (open-input-string str)))
+
+(define (snail-parse-file filename)
+  (snail-parse-port (open-input-file filename #:mode 'text)))
+
+(provide snail-lexer
+         snail-lex-string
+         snail-lex-file
+         snail-parser
+         snail-parse-string
+         snail-parse-file)
