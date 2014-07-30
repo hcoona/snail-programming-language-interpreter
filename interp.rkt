@@ -2,45 +2,6 @@
 (require racket/match)
 (require "parser.rkt")
 
-#|
-
-(define-syntax (get-ast stx)
-  (let* ([postfix-name
-          (lambda (name postfix)
-            (string->symbol
-             (string-append (format "~a-~a"
-                                    (symbol->string name)
-                                    (symbol->string postfix)))))]
-         [build-lexer-name
-          (lambda (name-datum)
-            (postfix-name (syntax->datum name-datum) 'lexer))]
-         [build-parser-name
-          (lambda (name-datum)
-            (postfix-name (syntax->datum name-datum) 'parser))])
-    (syntax-case stx ()
-      [(_ "STRING" name str)
-       (with-syntax ([lexer-name (datum->syntax stx (build-lexer-name #'name))]
-                     [parser-name (datum->syntax stx (build-parser-name #'name))])
-         #'(let* ([input (open-input-string str)]
-                  [ast (parser-name (lambda () (lexer-name input)))])
-             (begin
-               (close-input-port input)
-               ast)))]
-      [(_ "FILE" name filename)
-       (with-syntax ([lexer-name (datum->syntax stx (build-lexer-name #'name))]
-                     [parser-name (datum->syntax stx (build-parser-name #'name))])
-         #'(let* ([input (open-input-file filename)]
-                  [ast (parser-name (lambda () (lexer-name input)))])
-             (begin
-               (close-input-port input)
-               ast)))])))
-
-(get-ast "STRING" snail "print a;")
-(get-ast "STRING" snail "if 1 < 2 then if a < b then print a; endif else print b; endif")
-(get-ast "FILE" snail "sample-code.txt")
-
-|#
-
 (define env0 '())
 (define (ext-env k v env)
   (cons `(,k . ,v) env))
@@ -77,25 +38,18 @@
     [(number? exp) exp]
     [(symbol? exp) (lookup-env exp env)]
     [else
-     (let-syntax ([delegate 
-                   (lambda (stx)
-                     (syntax-case stx ()
-                       [(_ eval op env)
-                        (with-syntax ([x (datum->syntax stx 'x)]
-                                      [y (datum->syntax stx 'y)])
-                          (syntax (`(op ,x ,y) (op (eval x env) (eval y env)))))]))])
-       (match exp
-         [`(NEG ,x) (- (eval. x env))]
-         [delegate eval. + env]
-         [delegate eval. - env]
-         [delegate eval. * env]
-         [delegate eval. / env]
-         [delegate eval. < env]
-         [delegate eval. <= env]
-         [delegate eval. > env]
-         [delegate eval. >= env]
-         [`(== ,x ,y) (= (eval. x env) (eval. y env))]
-         [`(!= ,x ,y) (not (= (eval. x env) (eval. y env)))]))]))
+     (match exp
+       [`(NEG ,x)      (-   (eval. x env))]
+       [(list '+ x y)  (+   (eval. x env) (eval. y env))]
+       [(list '- x y)  (-   (eval. x env) (eval. y env))]
+       [(list '* x y)  (*   (eval. x env) (eval. y env))]
+       [(list '/ x y)  (/   (eval. x env) (eval. y env))]
+       [(list '< x y)  (<   (eval. x env) (eval. y env))]
+       [(list '<= x y) (<=  (eval. x env) (eval. y env))]
+       [(list '> x y)  (>   (eval. x env) (eval. y env))]
+       [(list '>= x y) (>=  (eval. x env) (eval. y env))]
+       [`(== ,x ,y)    (=   (eval. x env) (eval. y env))]
+       [`(!= ,x ,y)    (not (= (eval. x env) (eval. y env)))])]))
 
 (define (interp stat)
   (interp1 stat env0))
