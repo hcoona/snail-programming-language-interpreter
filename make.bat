@@ -1,0 +1,1 @@
+raco exe -o snail-interpreter.exe main.rkt
